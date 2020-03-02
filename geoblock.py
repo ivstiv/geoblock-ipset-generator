@@ -62,10 +62,6 @@ def longToIp(long):
     return socket.inet_ntoa(struct.pack('!L', long))
 
 # EXECUTION STARTS FROM HERE
-if not os.path.isfile(config['DATABASE']['File']):
-    print("[ERROR] Missing database file:"+config['DATABASE']['File'])
-    exit()
-
 mainArgs = filter(lambda arg: arg.startswith('--'), sys.argv)
 if validateArgs(mainArgs):
     countryCodes = []
@@ -75,6 +71,10 @@ if validateArgs(mainArgs):
         argumentIndex = sys.argv.index(arg)
         
         if arg == '--countries':
+            if not os.path.isfile(config['DATABASE']['File']):
+                print("[ERROR] Missing database file:"+config['DATABASE']['File'])
+                exit()
+
             if argumentIndex+1 < len(sys.argv):
                 countries = sys.argv[argumentIndex+1].upper() 
                 countryCodes = countries.split(',')
@@ -84,6 +84,10 @@ if validateArgs(mainArgs):
                 exit()
                 
         elif arg == '--name':
+            if not os.path.isfile(config['DATABASE']['File']):
+                print("[ERROR] Missing database file:"+config['DATABASE']['File'])
+                exit()
+
             if argumentIndex+1 < len(sys.argv):
                 name = sys.argv[argumentIndex+1]
                 print('List name: '+name)
@@ -101,8 +105,16 @@ if validateArgs(mainArgs):
             wget.download(url, 'DATABASE.ZIP')
 
             print('\nUnzipping %s...' % (config['DATABASE']['File']))
-            with zipfile.ZipFile("DATABASE.ZIP","r") as zip_ref:
-                zip_ref.extract(config['DATABASE']['File'])
+            try:
+                with zipfile.ZipFile("DATABASE.ZIP","r") as zip_ref:
+                    zip_ref.extract(config['DATABASE']['File'])
+            except zipfile.BadZipfile:
+                print('[ERROR] You have either reached the download limit or the specified token is invalid.')
+                f = open("DATABASE.ZIP", "r")
+                print('[ERROR MESSAGE] '+f.read())
+                f.close()
+                os.remove("DATABASE.ZIP")
+                exit()
 
             print('\nDeleting DATABASE.ZIP')
             os.remove("DATABASE.ZIP")
