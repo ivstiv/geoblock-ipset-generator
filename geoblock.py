@@ -9,6 +9,7 @@ import random
 import string
 import wget
 import zipfile
+import six
 
 DEBUG = True
 
@@ -26,8 +27,6 @@ def validateArgs(args):
     return True
 
 """
-    Ask a yes/no question via raw_input() and return their answer.
-
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
     It must be "yes" (the default), "no" or None (meaning an answer
@@ -49,7 +48,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = six.moves.input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
