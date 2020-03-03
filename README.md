@@ -43,15 +43,15 @@ Database download example (will only work if you have a download token in the co
 
  1. Clone the repository
 
-    git clone https://github.com/Ivstiv/geoblock-ipset-generator.git
+    ```git clone https://github.com/Ivstiv/geoblock-ipset-generator.git```
 
- 2. Enter and directory
+ 2. Enter the directory
 
-    cd geoblock-ipset-generator
+    ```cd geoblock-ipset-generator```
 
 3. Install the required dependencies with pip
 
-    pip install -r requirements.txt
+    ```pip install -r requirements.txt```
 
 4. Upload a database csv file or setup your download token in the config.ini. The database file can be found in **IP2LOCATION-LITE-DB1.BIN.ZIP** found [here](https://download.ip2location.com/lite/).
 5. Run the script from the examples above.
