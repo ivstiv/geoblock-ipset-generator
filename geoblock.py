@@ -10,6 +10,7 @@ import string
 import wget
 import zipfile
 import six
+from lxml import html
 
 DEBUG = True
 
@@ -60,7 +61,70 @@ def query_yes_no(question, default="yes"):
 def longToIp(long):
     return socket.inet_ntoa(struct.pack('!L', long))
 
-# EXECUTION STARTS FROM HERE
+def updateDatabase():
+    if(not config['DATABASE']['token']):
+        print('[ERROR] You need to specify a download token found in your IP2Location profile https://lite.ip2location.com/file-download')
+        exit()
+
+    print('Beginning download of DATABASE.ZIP...')
+    url = 'https://www.ip2location.com/download/?token={Token}&file={DatabaseCode}'.format(Token=config['DATABASE']['token'],DatabaseCode=config['DATABASE']['database-code'])
+    wget.download(url, 'DATABASE.ZIP')
+
+    print('\nUnzipping %s...' % (config['DATABASE']['file']))
+    try:
+        with zipfile.ZipFile("DATABASE.ZIP","r") as zip_ref:
+            zip_ref.extract(config['DATABASE']['file'])
+    except zipfile.BadZipfile:
+        print('[ERROR] You have either reached the download limit or the specified token is invalid.')
+        f = open("DATABASE.ZIP", "r")
+        print('[ERROR MESSAGE] '+f.read())
+        f.close()
+        os.remove("DATABASE.ZIP")
+        exit()
+
+    print('\nDeleting DATABASE.ZIP')
+    os.remove("DATABASE.ZIP")
+
+    print('\nThe database was sucessfully updated!')
+
+def checkVersion():
+    print('Checking for new database version...\n')
+    # downloading the file for scraping
+    versionURL = 'https://download.ip2location.com/lite/'
+    wget.download(versionURL, 'versionCheck.html')
+    versionCheck = open("versionCheck.html", "r")
+    pageString = versionCheck.read()
+    versionCheck.close()
+    os.remove("versionCheck.html")
+
+    # scraping the date of the upload
+    pageHTML = html.fromstring(pageString)
+    info = pageHTML.xpath('//a[@href="{File}"]/../following-sibling::*[1]/text()'.format(File=config['DATABASE']['database-version-file']))
+    newDate = info[0].strip()
+
+    print('\nYour database version is from: %s' % (config['DATABASE']['database-version-date']))
+    print('Latest database version is from: %s' % (newDate))
+
+    if(newDate != config['DATABASE']['database-version-date']):
+        if query_yes_no('Would you like to download the latest version of the database?'):
+            updateDatabase()
+
+            # setting the new date
+            config['DATABASE']['database-version-date'] = newDate
+            with open('config.ini', 'w') as configfile:
+                config.write(configfile)
+    else:
+        print('Nothing to update.')
+
+
+
+
+
+##                          ##
+# EXECUTION STARTS FROM HERE #
+##                          ##
+checkVersion()
+
 mainArgs = list(filter(lambda arg: arg.startswith('--'), sys.argv))
 if validateArgs(mainArgs):
     countryCodes = []
@@ -70,8 +134,8 @@ if validateArgs(mainArgs):
         argumentIndex = sys.argv.index(arg)
         
         if arg == '--countries':
-            if not os.path.isfile(config['DATABASE']['File']):
-                print("[ERROR] Missing database file:"+config['DATABASE']['File'])
+            if not os.path.isfile(config['DATABASE']['file']):
+                print("[ERROR] Missing database file:"+config['DATABASE']['file'])
                 exit()
 
             if argumentIndex+1 < len(sys.argv):
@@ -83,8 +147,8 @@ if validateArgs(mainArgs):
                 exit()
                 
         elif arg == '--name':
-            if not os.path.isfile(config['DATABASE']['File']):
-                print("[ERROR] Missing database file:"+config['DATABASE']['File'])
+            if not os.path.isfile(config['DATABASE']['file']):
+                print("[ERROR] Missing database file:"+config['DATABASE']['file'])
                 exit()
 
             if argumentIndex+1 < len(sys.argv):
@@ -95,30 +159,7 @@ if validateArgs(mainArgs):
                 exit()
 
         elif arg == '--update-database':
-            if(not config['DATABASE']['Token']):
-                print('[ERROR] You need to specify a download token found in your IP2Location profile https://lite.ip2location.com/file-download')
-                exit()
-
-            print('Beginning download of DATABASE.ZIP...')
-            url = 'https://www.ip2location.com/download/?token={Token}&file={DatabaseCode}'.format(Token=config['DATABASE']['Token'],DatabaseCode=config['DATABASE']['DatabaseCode'])
-            wget.download(url, 'DATABASE.ZIP')
-
-            print('\nUnzipping %s...' % (config['DATABASE']['File']))
-            try:
-                with zipfile.ZipFile("DATABASE.ZIP","r") as zip_ref:
-                    zip_ref.extract(config['DATABASE']['File'])
-            except zipfile.BadZipfile:
-                print('[ERROR] You have either reached the download limit or the specified token is invalid.')
-                f = open("DATABASE.ZIP", "r")
-                print('[ERROR MESSAGE] '+f.read())
-                f.close()
-                os.remove("DATABASE.ZIP")
-                exit()
-
-            print('\nDeleting DATABASE.ZIP')
-            os.remove("DATABASE.ZIP")
-
-            print('\nThe database was sucessfully updated!')
+            updateDatabase()
             exit()
 
 
@@ -144,7 +185,7 @@ if validateArgs(mainArgs):
     listCIDRs = []
     listIpCount = 0
     for countryCode in countryCodes:
-        reader = csv.reader(open(config['DATABASE']['File'], 'r'),delimiter=',')
+        reader = csv.reader(open(config['DATABASE']['file'], 'r'),delimiter=',')
         filtered = filter(lambda p: countryCode == p[2], reader)
         for row in filtered:
             startip = longToIp(int(row[0]))
