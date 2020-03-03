@@ -43,13 +43,16 @@ Database download example (will only work if you have a download token in the co
 
  1. Clone the repository
 
-     git clone https://github.com/Ivstiv/geoblock-ipset-generator.git
+    git clone https://github.com/Ivstiv/geoblock-ipset-generator.git
+
  2. Enter and directory
 
-     cd geoblock-ipset-generator
+    cd geoblock-ipset-generator
+
 3. Install the required dependencies with pip
 
     pip install -r requirements.txt
+
 4. Upload a database csv file or setup your download token in the config.ini. The database file can be found in **IP2LOCATION-LITE-DB1.BIN.ZIP** found [here](https://download.ip2location.com/lite/).
 5. Run the script from the examples above.
 
@@ -72,6 +75,7 @@ Before we continue let me explain that the rules that use the PREROUTING chain a
 **You need to substitute any placeholders <> with your own values. And if you don't mind you can directly DROP the requests instead of REJECTING them. (check the -j flag)**
 
 **WHITELIST**
+
 [INPUT Chain] Implementing a whitelist:
 
     iptables -I INPUT -p tcp -j REJECT
@@ -90,6 +94,7 @@ Before we continue let me explain that the rules that use the PREROUTING chain a
     iptables -t mangle -I PREROUTING -p tcp -m multiport --dports <PORT1,PORT2,PORT3> -j REJECT
     iptables -t mangle -I PREROUTING -m set --match-set <IPSET_LIST> src -p tcp -m multiport --dports <PORT1,PORT2,PORT3> -j ACCEPT
 **BLACKLIST**
+
 [INPUT Chain] Implementing a blacklist (assuming default policy is ACCEPT):
 
     iptables -I INPUT -m set --match-set <IPSET_LIST> src -p tcp -j REJECT
