@@ -1,13 +1,7 @@
 # geoblock-ipset-generator
 
 
-- check if IPSET is installed
 - readme instructions
-- test on different versions of python 2.7
-- test installation 2.7 
-- test download 2.7
-
-add ipset list test | less to the end
 
 https://lite.ip2location.com/file-download
 

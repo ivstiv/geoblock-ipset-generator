@@ -123,6 +123,15 @@ def checkVersion():
 ##                          ##
 # EXECUTION STARTS FROM HERE #
 ##                          ##
+
+try:
+    FNULL = open(os.devnull, 'w')
+    subprocess.call(["ipset", 'help'], stdout=FNULL)
+except:
+    print('[ERROR] The script detected that ipset is not installed on the system!')
+    exit()
+
+
 checkVersion()
 
 mainArgs = list(filter(lambda arg: arg.startswith('--'), sys.argv))
