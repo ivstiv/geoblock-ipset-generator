@@ -62,7 +62,7 @@ def longToIp(long):
     return socket.inet_ntoa(struct.pack('!L', long))
 
 # EXECUTION STARTS FROM HERE
-mainArgs = filter(lambda arg: arg.startswith('--'), sys.argv)
+mainArgs = list(filter(lambda arg: arg.startswith('--'), sys.argv))
 if validateArgs(mainArgs):
     countryCodes = []
     name = ''
@@ -172,5 +172,7 @@ if validateArgs(mainArgs):
         exit()
 
     print('\n%s was created successfully! You can follow the instructions in the README or the Github page if you want to implement the set as whitelist or blacklist.\n\nFor more advanced usage consider checking out the relevant firewall documentation.\n' % (name))
+    print('To check your ipset execute: ipset list %s | less' % (name))
+    print('To destroy your ipset execute: ipset destroy %s' % (name))
 else:
     print("Use --help to see available options!")
