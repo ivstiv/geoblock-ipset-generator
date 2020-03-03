@@ -12,7 +12,7 @@ import zipfile
 import six
 from lxml import html
 
-DEBUG = True
+DEBUG = False
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -124,12 +124,14 @@ def checkVersion():
 # EXECUTION STARTS FROM HERE #
 ##                          ##
 
-try:
-    FNULL = open(os.devnull, 'w')
-    subprocess.call(["ipset", 'help'], stdout=FNULL)
-except:
-    print('[ERROR] The script detected that ipset is not installed on the system!')
-    exit()
+
+if not DEBUG:
+    try:
+        FNULL = open(os.devnull, 'w')
+        subprocess.call(["ipset", 'help'], stdout=FNULL)
+    except:
+        print('[ERROR] The script detected that ipset is not installed on the system!')
+        exit()
 
 
 checkVersion()
